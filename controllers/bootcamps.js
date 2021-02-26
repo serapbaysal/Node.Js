@@ -2,6 +2,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const Bootcamp = require('../models/Bootcamp');
 const asyncHandler = require('../middleware/async');
 const geocoder = require('../utils/geocoder');
+//const { delete } = require('../routes/bootcamps');
 
 
 //@desc       Get all bootcamps
@@ -9,23 +10,55 @@ const geocoder = require('../utils/geocoder');
 //@access     Public
 exports.getBootcamps = asyncHandler(async (req,res,next) =>{
 
-
     let query;
-    let queryStr = JSON.stringify(req.query);
-
+ 
+    // Copy query string
+    let reqQuery = { ...req.query };
+   
+    // Fields to exclude
+    const removeFields = ['select','sort'];
+   
+    // Loop and remove 'select' from query string
+    removeFields.forEach(param => delete reqQuery[param]);
+   
+    // Create query string
+    let queryStr = JSON.stringify(reqQuery);
+   
+    // Regx to add $ before the filter (MongoDB) fliter as $lte , $gte ..etc operators
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+    console.log(queryStr);
+    // console.log(reqQuery);
+   
+    // Find resource
+    query = Bootcamp.find(JSON.parse(queryStr));
+   
+    // Select Fields
+    if (req.query.select) {
+      const fields = req.query.select.split(',').join(' ');
+      query = query.select(fields);
+     
+    }
+
+    // Sort
+
+    if(req.query.sort){
+        const sortBy = req.query.sort.split(',').join(' ');
+        query = query.sort(sortBy);
+
+
+    }else{
+        query = query.sort('-createdAt');
+    }
 
    
-    
-        const bootcamps = await Bootcamp.find(req.query);
-        
-        res
-            .status(200)
-            .json({success: true, count: bootcamps.length, data: bootcamps });
-
-    
-    
+    // Excuting query
+    const bootcamps = await query;
    
+    res.status(200).json({
+      success: true,
+      count: bootcamps.length,
+      data: bootcamps
+    });
 });
 
 //@desc       Get single bootcamps
