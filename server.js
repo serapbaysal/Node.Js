@@ -12,7 +12,7 @@ connectDB();
 
 // Route files
 const bootcamps = require('./routes/bootcamps');
-
+const courses = require('./routes/courses');
 
 const app = express();
 
@@ -28,6 +28,7 @@ app.use(logger);
 
 //Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
+app.use('/api/v1/courses', courses);
 
 app.use(errorHandler);
 
@@ -42,4 +43,4 @@ process.on('unhandledRejection', (err, promise)=>{
     console.log(`Error: ${err.message}`);
     //Close server & exit process
     server.close(() => process.exit(1));
-})
+}) 
