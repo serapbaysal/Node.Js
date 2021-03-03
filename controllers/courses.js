@@ -35,6 +35,7 @@ exports.getCourse = asyncHandler(async(req, res, next)=>{
        select: 'name description'
     });
 
+    
     res.status(200).json({
         success: true,
         count: courses.length,
